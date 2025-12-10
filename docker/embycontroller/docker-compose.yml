@@ -1,0 +1,59 @@
+services:
+  app:
+    image: ranjie/emby-manager:latest
+    container_name: emby-manager
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - TZ=Asia/Shanghai
+    ports:
+      - "8088:80"
+    volumes:
+      - app-data:/app/data
+      - app-cache:/app/cache
+      - ./plugins:/app/plugins
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  mysql:
+    image: mysql:8
+    container_name: emby-manager-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: "mysql_root_password"
+      MYSQL_DATABASE: "embymanager"
+      MYSQL_USER: "username"
+      MYSQL_PASSWORD: "password"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-pmysql_root_password"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:8
+    container_name: emby-manager-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass redis_password123
+    environment:
+      - REDIS_PASSWORD=redis_password123
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "redis_password123", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  app-data:
+  app-cache:
+  mysql-data:
+  redis-data:
