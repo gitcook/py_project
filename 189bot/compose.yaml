@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  189tgbot:
+    # 使用 Dockerfile 在当前目录构建镜像
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: 189tgbot
+    image: wamag/189tgbot:latest
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./alist-monitor-data:/app/data
+      # 映射代码目录，以便在容器内调试或查看代码（可选）
+      # - .:/app 
+      
+    # 重启策略：如果容器意外退出，自动重启 (除非手动停止)
+    restart: unless-stopped
+    
+    # 确保 Python 使用无缓冲输出，便于 Docker logs 实时查看
+    environment:
+      - PYTHONUNBUFFERED=1
+

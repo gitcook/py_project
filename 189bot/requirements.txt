@@ -1,0 +1,4 @@
+flask
+telethon
+aiohttp
+PySocks # 如果使用 SOCKS 代理

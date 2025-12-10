@@ -1,0 +1,51 @@
+# 使用官方 Python 3.11 slim 镜像作为基础
+FROM python:3.11-slim
+
+# 设置工作目录
+WORKDIR /app
+
+# ----------------------------------------------------
+# 1. 加速源配置 & 复制依赖
+# ----------------------------------------------------
+
+# 切换 APT 软件源到中国科学技术大学镜像
+RUN if [ -f /etc/apt/sources.list.d/debian.sources ]; then \
+        sed -i 's|deb.debian.org|mirrors.ustc.edu.cn|g' /etc/apt/sources.list.d/debian.sources && \
+        sed -i 's|security.debian.org|mirrors.ustc.edu.cn|g' /etc/apt/sources.list.d/debian.sources; \
+    fi
+
+# 复制 requirements.txt
+COPY requirements.txt .
+
+# ----------------------------------------------------
+# 2. 安装系统依赖 + Python 依赖（国内 PyPI 镜像）
+# ----------------------------------------------------
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        build-essential \
+        python3-dev \
+        git \
+        libsqlite3-dev \
+        netcat-openbsd && \
+    \
+    # 安装 Python 依赖（清华 PyPI）
+    pip install --no-cache-dir -r requirements.txt -i https://pypi.mirrors.ustc.edu.cn/simple && \
+    \
+    # 清理构建依赖和缓存，减小镜像体积
+    apt-get purge -y build-essential python3-dev && \
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# ----------------------------------------------------
+# 3. 复制项目文件
+# ----------------------------------------------------
+COPY . /app
+
+# ----------------------------------------------------
+# 4. 暴露端口 & 启动命令
+# ----------------------------------------------------
+EXPOSE 5000
+
+CMD ["python", "app.py"]
+

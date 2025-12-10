@@ -1,0 +1,100 @@
+{
+    "TELEGRAM": {
+        "API_ID": 20089985,
+        "API_HASH": "ab60ecfb2fd055386e86719e00416773",
+        "STRING_SESSION": "1BVtsOH4Bu6A1LyPLQ--ELywobheVKefWQg3HSPivLiau3tqhTHvOG4pcPHwwGQWvkLyaQQR_llR1RitnFLWVRP9I5utQ4ZJ2v-Qi5qFxc5fjVZeYVrT4ILE4JqktkPDUw08H58Nv7kyyzp3W_wynoCVo0AveVqeKKxQNLqZ8MguMLfhxNvWxLQc9NXVZjlucrehUcZ8a0_u-xYMwo5H35FWDapU-_kRBFCuzCIlRApn2ia9Y7RcGIOYqHcEKYok-dY4rW8x6u4tSIYldRFkDGP5WIoKmXe_AO28GSfLCSHJ2rI1Sn_Uuw4cjdIxY-gEOmabsNODtnh2pl8HP3bKvRyB9gMRXDwE="
+    },
+    "ALIST": {
+        "URL": "http://119.3.123.100:4567/api/shares/",
+        "KEY": "6b4aca2c-bfdb-400b-8a8a-a042236d0cc6"
+    },
+    "MONITORING": {
+        "SAVE_PATH": "/app/data",
+        "LOOP_SWITCH": 2,
+        "MONITOR_INTERVAL_HOURS": 3.0,
+        "MONITOR_LIMIT": 3000,
+        "MONITOR_DAYS": 365,
+        "SMART_STOP_COUNT": 50,
+        "DB_RETENTION_DAYS": 60,
+        "CHANNEL_URLS": [
+            "https://t.me/tianyirigeng",
+            "https://t.me/cloudtianyi"
+        ]
+    },
+    "DRIVE_SWITCHES": {
+        "ENABLE_189": true,
+        "ENABLE_UC": false,
+        "ENABLE_123": false
+    },
+    "FILTERING": {
+        "EXCLUDE_KEYWORDS": [
+            "小程序",
+            "预告",
+            "书籍",
+            "电子书",
+            "课程",
+            "教程",
+            "写真"
+        ]
+    },
+    "RULES": {
+        "API_CONFIGS": [
+            {
+                "name": "TV Show (剧集)",
+                "folder_prefix": "temp/189bot/剧集/",
+                "try_join": true,
+                "priority_keywords": [
+                    "风与潮"
+                ],
+                "required_keywords": [
+                    "风与潮"
+                ],
+                "optional_keywords": [
+                    "季",
+                    "集",
+                    "EP",
+                    "S0",
+                    "美剧",
+                    "英剧"
+                ],
+                "excluded_keywords": [
+                    "P5",
+                    "Profile 5",
+                    "DVP5"
+                ]
+            },
+            {
+                "name": "Movies (电影)",
+                "folder_prefix": "temp/189bot/电影/",
+                "try_join": true,
+                "priority_keywords": [],
+                "required_keywords": [
+                    "风与潮"
+                ],
+                "optional_keywords": [
+                    "原盘",
+                    "REMUX",
+                    "HDR",
+                    "电影"
+                ],
+                "excluded_keywords": [
+                    "枪版",
+                    "抢先版",
+                    "TS",
+                    "TC",
+                    "季",
+                    "集",
+                    "EP",
+                    "S0",
+                    "美剧",
+                    "英剧",
+                    "完结"
+                ]
+            }
+        ]
+    },
+    "PROXY": {
+        "ENABLE_PROXY": false,
+        "PROXY_URL": "socks5://192.168.2.1:7891"
+    }
+}

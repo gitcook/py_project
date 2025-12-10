@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>云盘监控配置</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: sans-serif; max-width: 900px; margin: auto; padding: 20px; background-color: #f4f7f6; }
+        h1 { color: #333; }
+        fieldset { margin-bottom: 20px; border: 1px solid #ccc; padding: 15px; border-radius: 8px; background-color: white; }
+        legend { font-weight: bold; padding: 0 10px; color: #007bff; }
+        label { display: block; margin-top: 10px; font-weight: 500; color: #555; }
+        input[type="text"], input[type="password"], input[type="number"], textarea { width: 100%; padding: 10px; margin-top: 5px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 5px; }
+        textarea { height: 80px; resize: vertical; font-family: monospace; }
+        .button-group button { padding: 10px 15px; margin-right: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: background-color 0.3s; }
+        .save-btn { background-color: #4CAF50; color: white; }
+        .save-btn:hover { background-color: #45a049; }
+        .start-btn { background-color: #007bff; color: white; }
+        .start-btn:hover { background-color: #0056b3; }
+        .stop-btn { background-color: #dc3545; color: white; }
+        .stop-btn:hover { background-color: #c82333; }
+        .button-group button:disabled { opacity: 0.6; cursor: not-allowed; }
+        #status { margin-top: 15px; padding: 10px; border-radius: 5px; background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404; }
+        .running { color: white; background-color: #28a745; padding: 5px 10px; border-radius: 4px; font-size: 0.9em; }
+        .stopped { color: white; background-color: #6c757d; padding: 5px 10px; border-radius: 4px; font-size: 0.9em; }
+        .rule-block { border: 1px dashed #007bff; padding: 15px; margin-bottom: 15px; border-radius: 5px; background-color: #f8faff; }
+        .rule-block h4 { margin-top: 0; color: #007bff; }
+        .rule-block button { background-color: #dc3545; color: white; margin-top: 10px;}
+        .rule-block button:hover { background-color: #c82333; }
+        .add-rule-btn { background-color: #28a745; color: white; }
+        .add-rule-btn:hover { background-color: #218838; }
+        input[type="checkbox"] { width: auto; margin-left: 0; }
+    </style>
+</head>
+<body>
+    <h1>🤖 Alist-TVBox 监控配置</h1>
+    <p>当前运行状态: 
+        {% if is_running %}
+            <span class="running">🟢 运行中</span>
+        {% else %}
+            <span class="stopped">🔴 未运行</span>
+        {% endif %}
+    </p>
+
+    <div class="button-group">
+        <button class="start-btn" onclick="startMonitor()" {% if is_running %}disabled{% endif %}>启动监控</button>
+        <button class="stop-btn" onclick="stopMonitor()" {% if not is_running %}disabled{% endif %}>停止监控</button>
+    </div>
+    
+    <hr>
+
+    <form id="configForm">
+        <fieldset>
+            <legend>1. Telegram 配置</legend>
+            <label>API ID:</label><input type="number" name="API_ID" value="{{ config.TELEGRAM.API_ID }}" required><br>
+            <label>API Hash:</label><input type="password" name="API_HASH" value="{{ config.TELEGRAM.API_HASH }}" required><br>
+            <label>Session (String):</label><input type="text" name="STRING_SESSION" value="{{ config.TELEGRAM.STRING_SESSION }}" placeholder="填你自己的tg session" required><br>
+        </fieldset>
+        
+        <fieldset>
+            <legend>2. Alist-TVBox 接口配置</legend>
+            <label>ALIST URL (API 接口地址):</label><input type="text" name="ALIST_URL" value="{{ config.ALIST.URL }}" placeholder="http://192.168.2.1:4567/api/shares/" required><br>
+            <label>ALIST Key (API 密钥):</label><input type="password" name="ALIST_KEY" value="{{ config.ALIST.KEY }}" required><br>
+        </fieldset>
+
+        <fieldset>
+            <legend>3. 运行环境与扫描配置</legend>
+            <label>数据保存路径 (Docker 内部):</label><input type="text" name="SAVE_PATH" value="{{ config.MONITORING.SAVE_PATH }}" readonly title="Docker内部路径，请勿修改"><br>
+            <label>运行模式 (1=循环常驻, 2=单次运行):</label><input type="number" name="LOOP_SWITCH" value="{{ config.MONITORING.LOOP_SWITCH }}" required><br>
+            <label>循环间隔 (小时):</label><input type="number" name="MONITOR_INTERVAL_HOURS" value="{{ config.MONITORING.MONITOR_INTERVAL_HOURS }}" required><br>
+            
+            <hr>
+            
+            <label>监控消息上限 (MONITOR_LIMIT):</label>
+            <input type="number" name="MONITOR_LIMIT" value="{{ config.MONITORING.MONITOR_LIMIT }}" required><br>
+
+            <label>最大回溯天数 (MONITOR_DAYS):</label>
+            <input type="number" name="MONITOR_DAYS" value="{{ config.MONITORING.MONITOR_DAYS }}" required><br>
+
+            <label>智能中断计数 (SMART_STOP_COUNT):</label>
+            <input type="number" name="SMART_STOP_COUNT" value="{{ config.MONITORING.SMART_STOP_COUNT }}" required><br>
+
+            <label>数据库记录保留天数 (DB_RETENTION_DAYS):</label>
+            <input type="number" name="DB_RETENTION_DAYS" value="{{ config.MONITORING.DB_RETENTION_DAYS }}" required><br>
+            <hr>
+            
+            <label>监控频道列表 (每行一个链接):</label>
+            <textarea name="CHANNEL_URLS">{{ '\n'.join(config.MONITORING.CHANNEL_URLS) }}</textarea>
+        </fieldset>
+
+        <fieldset>
+            <legend>4. 抓取开关</legend>
+            <label><input type="checkbox" name="ENABLE_189" {% if config.DRIVE_SWITCHES.ENABLE_189 %}checked{% endif %}> 启用 天翼云盘 (189)</label><br>
+            <label><input type="checkbox" name="ENABLE_UC" {% if config.DRIVE_SWITCHES.ENABLE_UC %}checked{% endif %}> 启用 UC 网盘</label><br>
+            <label><input type="checkbox" name="ENABLE_123" {% if config.DRIVE_SWITCHES.ENABLE_123 %}checked{% endif %}> 启用 123 网盘</label>
+        </fieldset>
+
+        <fieldset>
+            <legend>5. 全局过滤关键词</legend>
+            <label>EXCLUDE_KEYWORDS (全局排除词，每行一个):</label>
+            <textarea name="EXCLUDE_KEYWORDS">{{ '\n'.join(config.FILTERING.EXCLUDE_KEYWORDS) }}</textarea>
+        </fieldset>
+        
+        <fieldset>
+            <legend>6. 监控分类规则 (API_CONFIGS)</legend>
+            <div id="rulesContainer">
+            </div>
+            <button class="add-rule-btn" type="button" onclick="addRule()">+ 添加新规则</button>
+        </fieldset>
+        
+        <button class="save-btn" type="submit">💾 保存配置</button>
+    </form>
+    
+    <p id="status"></p>
+
+    <script>
+        // 从 Flask 注入的配置对象中加载规则
+        const initialRules = {{ config.RULES.API_CONFIGS | tojson }};
+        let nextRuleIndex = initialRules.length;
+
+        async function sendApiRequest(endpoint, method, body = null) {
+            const response = await fetch(endpoint, {
+                method: method,
+                headers: {'Content-Type': 'application/json'},
+                body: body ? JSON.stringify(body) : null
+            });
+            return response.json();
+        }
+
+        // --- 规则动态渲染和管理 ---
+        function getRuleHtml(index, rule) {
+            // ✅ 关键修正：使用 (rule.field ? rule.field.join('\n') : '') 确保即使字段为空或未定义也不会报错
+            const priorityKeywordsStr = (rule.priority_keywords ? rule.priority_keywords.join('\n') : '');
+            const requiredKeywordsStr = (rule.required_keywords ? rule.required_keywords.join('\n') : ''); 
+            const optionalKeywordsStr = (rule.optional_keywords ? rule.optional_keywords.join('\n') : '');
+            const excludedKeywordsStr = (rule.excluded_keywords ? rule.excluded_keywords.join('\n') : '');
+
+            return `
+                <div class="rule-block" id="rule-${index}">
+                    <h4>规则 ${index + 1}: ${rule.name || '新规则'}</h4>
+                    <label>规则名称 (name):</label><input type="text" name="RULES[${index}][name]" value="${rule.name || ''}" required><br>
+                    <label>保存路径前缀 (folder_prefix):</label><input type="text" name="RULES[${index}][folder_prefix]" value="${rule.folder_prefix || ''}" required><br>
+                    
+                    <label>特权关键词 (每行一个,多资源订阅):</label>
+                    <textarea name="RULES[${index}][priority_keywords]">${priorityKeywordsStr}</textarea>
+                    
+                    <label>必选关键词（AND 匹配，单独一个资源）:</label>
+                    <textarea name="RULES[${index}][required_keywords]">${requiredKeywordsStr}</textarea>
+
+                    <label>可选关键词 (每行一个):</label>
+                    <textarea name="RULES[${index}][optional_keywords]">${optionalKeywordsStr}</textarea>
+
+                    <label>排除关键词 (每行一个):</label>
+                    <textarea name="RULES[${index}][excluded_keywords]">${excludedKeywordsStr}</textarea>
+
+                    <label><input type="checkbox" name="RULES[${index}][try_join]" ${rule.try_join ? 'checked' : ''}> 尝试加入频道 (try_join)</label><br>
+                    
+                    <button type="button" onclick="removeRule(${index})">删除此规则</button>
+                </div>
+            `;
+        }
+
+        function renderRules() {
+            const container = document.getElementById('rulesContainer');
+            container.innerHTML = '';
+            
+            // 使用 initialRules 的内容重新渲染，确保加载的是 config.json 的数据
+            initialRules.forEach((rule, index) => {
+                // 注意：这里使用数组索引作为规则的唯一标识
+                container.insertAdjacentHTML('beforeend', getRuleHtml(index, rule));
+            });
+            nextRuleIndex = initialRules.length;
+        }
+
+        function addRule() {
+            const newRule = {
+                name: `新规则 ${nextRuleIndex + 1}`,
+                folder_prefix: "",
+                priority_keywords: [],
+                required_keywords: [], 
+                optional_keywords: [],
+                excluded_keywords: [],
+                try_join: true
+            };
+            const container = document.getElementById('rulesContainer');
+            container.insertAdjacentHTML('beforeend', getRuleHtml(nextRuleIndex, newRule));
+            nextRuleIndex++;
+        }
+
+        function removeRule(index) {
+            const element = document.getElementById(`rule-${index}`);
+            if (element) {
+                element.remove();
+                // 注意: 尽管DOM元素被移除，但为了简化，我们依赖于提交时重新收集所有现存的 .rule-block
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', renderRules);
+
+        // --- 提交函数 (最重要!) ---
+        document.getElementById('configForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = {
+                TELEGRAM: {}, ALIST: {}, MONITORING: {}, DRIVE_SWITCHES: {}, FILTERING: {}, RULES: { API_CONFIGS: [] }, PROXY: {}
+            };
+            
+            // 基础配置收集
+            data.TELEGRAM.API_ID = formData.get('API_ID');
+            data.TELEGRAM.API_HASH = formData.get('API_HASH');
+            data.TELEGRAM.STRING_SESSION = formData.get('STRING_SESSION');
+            
+            data.ALIST.URL = formData.get('ALIST_URL');
+            data.ALIST.KEY = formData.get('ALIST_KEY');
+            
+            // ❗ MONITORING 配置收集 (包含所有新的扫描参数)
+            data.MONITORING.SAVE_PATH = formData.get('SAVE_PATH');
+            data.MONITORING.LOOP_SWITCH = formData.get('LOOP_SWITCH');
+            data.MONITORING.MONITOR_INTERVAL_HOURS = formData.get('MONITOR_INTERVAL_HOURS');
+            
+            // 全局扫描参数 (已包含在 form data 中)
+            data.MONITORING.MONITOR_LIMIT = formData.get('MONITOR_LIMIT');
+            data.MONITORING.MONITOR_DAYS = formData.get('MONITOR_DAYS');
+            data.MONITORING.SMART_STOP_COUNT = formData.get('SMART_STOP_COUNT');
+            data.MONITORING.DB_RETENTION_DAYS = formData.get('DB_RETENTION_DAYS'); 
+
+            // 频道列表 (使用 _TEXT 字段名)
+            data.MONITORING.CHANNEL_URLS_TEXT = formData.get('CHANNEL_URLS'); 
+            
+            // 开关 (处理未被选中的情况)
+            data.DRIVE_SWITCHES.ENABLE_189 = formData.get('ENABLE_189') === 'on';
+            data.DRIVE_SWITCHES.ENABLE_UC = formData.get('ENABLE_UC') === 'on';
+            data.DRIVE_SWITCHES.ENABLE_123 = formData.get('ENABLE_123') === 'on';
+
+            // 过滤词 (使用 _TEXT 字段名)
+            data.FILTERING.EXCLUDE_KEYWORDS_TEXT = formData.get('EXCLUDE_KEYWORDS');
+
+            // 代理 (保留配置中未在前端显示的字段，确保不丢失)
+            data.PROXY.ENABLE_PROXY = {{ config.PROXY.ENABLE_PROXY | tojson }};
+            data.PROXY.PROXY_URL = {{ config.PROXY.PROXY_URL | tojson }};
+            
+            // --- 收集 RULES 数组 (修正关键词字段名以匹配后端) ---
+            const ruleBlocks = document.querySelectorAll('.rule-block');
+
+            ruleBlocks.forEach(block => {
+                const ruleData = {
+                    name: block.querySelector('input[name$="[name]"]').value,
+                    folder_prefix: block.querySelector('input[name$="[folder_prefix]"]').value,
+                    
+                    // ✅ 关键词文本字段：使用 _text 后缀，以便后端 app.py 解析多行文本
+                    priority_keywords_text: block.querySelector('textarea[name$="[priority_keywords]"]').value,
+                    required_keywords_text: block.querySelector('textarea[name$="[required_keywords]"]').value, 
+                    optional_keywords_text: block.querySelector('textarea[name$="[optional_keywords]"]').value,
+                    excluded_keywords_text: block.querySelector('textarea[name$="[excluded_keywords]"]').value,
+                    
+                    try_join: block.querySelector('input[name$="[try_join]"]').checked
+                };
+
+                data.RULES.API_CONFIGS.push(ruleData);
+            });
+
+            // 提交 AJAX 请求
+            const result = await sendApiRequest('/api/config', 'POST', data);
+            document.getElementById('status').innerHTML = result.message + (result.success ? '' : `<br>请检查控制台错误。`);
+            
+            if (result.success) { setTimeout(() => location.reload(), 500); }
+        });
+
+        // --- 监控管理函数 ---
+        async function startMonitor() {
+            const result = await sendApiRequest('/api/monitor/start', 'POST');
+            document.getElementById('status').textContent = result.message;
+            if (result.success) { setTimeout(() => location.reload(), 1000); }
+        }
+
+        async function stopMonitor() {
+            const result = await sendApiRequest('/api/monitor/stop', 'POST');
+            document.getElementById('status').textContent = result.message;
+            if (result.success) { setTimeout(() => location.reload(), 1000); }
+        }
+    </script>
+</body>
+</html>
