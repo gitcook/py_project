@@ -7,7 +7,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: 189tgbot
-    image: wamag/189tgbot:latest
+    image: 189tgbot:latest
     ports:
       - "5000:5000"
     volumes:
