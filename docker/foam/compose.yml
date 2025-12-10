@@ -1,0 +1,80 @@
+version: '3'
+services:
+  foam-api:
+    image: ciwei123321/foam-api:latest
+    privileged: true
+    ports:
+      - "8083:8080"
+    volumes:
+      - ./data:/data
+      - /etc/hosts:/etc/hosts
+    container_name: foam-api
+    restart: always
+    environment:
+      #db:3306 使用的是容器内部的端口 不是映射完的端口
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/foam-api?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=GMT%2B8&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=password
+      # 需要配置tmdb接口hosts,自行修改下面两项
+      - TMDB_APITOKEN=
+      - TMDB_APIKEY=
+      - TMDB_IMAGE_URL=https://image.tmdb.org/t/p/original
+      - TZ=Asia/Shanghai
+      # 代理地址,按需修改
+      - HTTP_PROXY_ENABLED=true
+      - HTTP_PROXY=http://172.17.0.1:7890
+      - HTTPS_PROXY=http://172.17.0.1:7890
+      - NO_PROXY=172.17.0.1,127.0.0.1,localhost,foam-api-search
+      # lisence配置文件
+      - LICENSE_FILE=/data/license.dat
+      # 搜索接口地址 pansou地址
+      - EMBY_HUB_SEARCH_URL=
+      #上传头像访问地址 也就是8080端口 需要外网能访问的ip
+      - AVATARS_BASE_URL=http://localhost:8083
+    networks:
+      - foam-network
+    links:
+      - db
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8.4.6
+    container_name: mysql_container
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: foam-api
+      TZ: "Asia/Shanghai"
+      LANG: en_US.UTF-8
+    command:
+      - mysqld
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --group_concat_max_len=102400
+        #    ports:
+        #      - "3306:3306"
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+    restart: always
+    networks:
+      - foam-network
+
+  foam:
+    image: ciwei123321/foam:latest
+    container_name: foam
+    restart: always
+      #    ports:
+      #      - "8081:80"
+    environment:
+      API_BASE_URL: "http://foam-api:8080"
+      TZ: Asia/Shanghai
+      IMAGE_URL: https://image.tmdb.org/t/p/
+    networks:
+      - foam-network
+    links:
+      - foam-api
+    depends_on:
+      - foam-api
+
+networks:
+  foam-network:
