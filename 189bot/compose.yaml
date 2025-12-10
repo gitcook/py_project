@@ -21,4 +21,7 @@ services:
     # 确保 Python 使用无缓冲输出，便于 Docker logs 实时查看
     environment:
       - PYTHONUNBUFFERED=1
+      - HTTP_PROXY=http://172.17.0.1:7890
+      - HTTPS_PROXY=http://172.17.0.1:7890
+      - NO_PROXY: "127.0.0.1,localhost,*.local,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
 
