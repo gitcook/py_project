@@ -92,6 +92,7 @@
             <label><input type="checkbox" name="ENABLE_189" {% if config.DRIVE_SWITCHES.ENABLE_189 %}checked{% endif %}> 启用 天翼云盘 (189)</label><br>
             <label><input type="checkbox" name="ENABLE_UC" {% if config.DRIVE_SWITCHES.ENABLE_UC %}checked{% endif %}> 启用 UC 网盘</label><br>
             <label><input type="checkbox" name="ENABLE_123" {% if config.DRIVE_SWITCHES.ENABLE_123 %}checked{% endif %}> 启用 123 网盘</label>
+            <label><input type="checkbox" name="ENABLE_115" {% if config.DRIVE_SWITCHES.ENABLE_115 %}checked{% endif %}> 启用 115 网盘</label>
         </fieldset>
 
         <fieldset>
@@ -231,6 +232,7 @@
             data.DRIVE_SWITCHES.ENABLE_189 = formData.get('ENABLE_189') === 'on';
             data.DRIVE_SWITCHES.ENABLE_UC = formData.get('ENABLE_UC') === 'on';
             data.DRIVE_SWITCHES.ENABLE_123 = formData.get('ENABLE_123') === 'on';
+            data.DRIVE_SWITCHES.ENABLE_115 = formData.get('ENABLE_115') === 'on';
 
             // 过滤词 (使用 _TEXT 字段名)
             data.FILTERING.EXCLUDE_KEYWORDS_TEXT = formData.get('EXCLUDE_KEYWORDS');
