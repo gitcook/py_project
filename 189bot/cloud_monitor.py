@@ -34,6 +34,7 @@ ENABLE_189 = True
 ENABLE_UC = False
 ENABLE_123 = False
 ENABLE_115 = False
+ENABLE_QUARK = False
 SAVE_PATH = '/app/data'
 LOOP_SWITCH = 2
 MONITOR_INTERVAL_HOURS = 3
@@ -70,11 +71,12 @@ def load_global_config():
     ALIST_KEY = CONFIG['ALIST'].get('KEY', '')
 
     # --- 3. 云盘抓取开关 ---
-    global ENABLE_189, ENABLE_UC, ENABLE_123, ENABLE_115
+    global ENABLE_189, ENABLE_UC, ENABLE_123, ENABLE_115, ENABLE_QUARK
     ENABLE_189 = CONFIG['DRIVE_SWITCHES'].get('ENABLE_189', True)
     ENABLE_UC = CONFIG['DRIVE_SWITCHES'].get('ENABLE_UC', False)
     ENABLE_123 = CONFIG['DRIVE_SWITCHES'].get('ENABLE_123', False)
     ENABLE_115 = CONFIG['DRIVE_SWITCHES'].get('ENABLE_115', False)
+    ENABLE_QUARK = CONFIG['DRIVE_SWITCHES'].get('ENABLE_QUARK', False)
 
 
     # --- 4. 运行环境与扫描配置 ---
@@ -203,6 +205,8 @@ RE_TIANYI = re.compile(r'(?:https?://)?cloud\.189\.cn/t/([a-zA-Z0-9]{12})\b', re
 RE_UC = re.compile(r'drive\.uc\.cn/s/([a-zA-Z0-9\-_]+)([^#]*)?(#*/list/share/([^\?\-]+))?', re.IGNORECASE)
 RE_123 = re.compile(r'(?:https?://)?(?:www\.)?(?:123[\d]*|pan\.123)\.com/s/([a-zA-Z0-9\-_]+)', re.IGNORECASE)
 RE_115 = re.compile(r'(?:https?://)?(?:www\.)?(?:115cdn\.com|115\.com)/s/([a-zA-Z0-9]+)', re.IGNORECASE)
+RE_QUARK = re.compile(r'(?:https?://)?pan\.quark\.cn/s/([a-zA-Z0-9]{12})\b', re.IGNORECASE)
+
 
 
 class SQLiteManager:
@@ -629,6 +633,7 @@ class CloudMonitor:
         if ENABLE_UC:  patterns.append((RE_UC, 'uc', 7, "https://drive.uc.cn/s/")) 
         if ENABLE_123: patterns.append((RE_123, '123', 3, "https://www.123865.com/s/")) 
         if ENABLE_115: patterns.append((RE_115, '115', 8, "https://115cdn.com/s/"))
+        if ENABLE_QUARK: patterns.append((RE_QUARK, 'quark', 5, "https://pan.quark.cn/s/"))
 
 
         items = []
