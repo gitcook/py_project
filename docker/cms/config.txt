@@ -1,0 +1,46 @@
+movie:
+  演唱会:
+    cid: 3325937951211889361
+    genre_ids: "10402"    
+  动画电影:
+    cid: 3325900550997386082
+    genre_ids: "16"
+  港台电影:
+    cid: 3325900842828669248
+    origin_country: "TW,HK"
+  华语电影:
+    cid: 3325901092087767505
+    original_language: "zh,cn,bo,za"
+  日韩电影:
+    cid: 3325901787201381266
+    origin_country: "JP,KP,KR,TH,IN,SG"
+  外语电影:
+    cid: 3325902031947407973  
+
+tv:
+  儿童:
+    cid: 3325902642394800788
+    genre_ids: "10762"
+  动漫:
+    cid: 3325903114019119361
+    genre_ids: "16"
+  纪录片:
+    cid: 3325903290255384756
+    genre_ids: "99"
+  综艺:
+    cid: 3325903518727512816
+    genre_ids: "10764,10767"
+  港台剧:
+    cid: 3325903730741190999
+    origin_country: "TW,HK"
+  国产剧:
+    cid: 3325904172384625336
+    origin_country: "CN"
+  欧美剧:
+    cid: 3325904399556518261
+    origin_country: "US,FR,GB,DE,ES,IT,NL,PT,RU,UK"
+  日韩剧:
+    cid: 3325904580633011087
+    origin_country: "JP,KP,KR,TH,IN,SG"
+  其它剧:
+    cid: 3325904749990617438

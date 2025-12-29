@@ -1,0 +1,48 @@
+services:
+  cloud-media-sync:
+    privileged: true
+    container_name: cloud-media-sync
+    image: docker.1ms.run/imaliang/cloud-media-sync:latest
+    restart: always
+    network_mode: bridge
+    volumes:
+      - "./config:/config"
+      - "./logs:/logs"
+      - "./cache:/var/cache/nginx/emby"
+      - "/data/media:/media"
+    ports:
+      - "9527:9527"
+      - "9096:9096"
+    environment:
+      - PUID=0
+      - PGID=0
+      - UMASK=022
+      - TZ=Asia/Shanghai
+      - RUN_ENV=online
+      - ADMIN_USERNAME=admin
+      - ADMIN_PASSWORD=admin
+      - CMS_API_TOKEN=cloud_media_sync
+      - EMBY_HOST_PORT=http://172.17.0.1:8096
+      - EMBY_API_KEY=xxx
+      - DONATE_CODE=CMS_XXX_XXX
+
+  emby:
+    privileged: true
+    container_name: emby
+    image: 'docker.1ms.run/amilys/embyserver:4.8.11.0'
+    restart: always
+    volumes:
+      - ./config:/config
+      - /mnt/media:/media
+    ports:
+      - 8096:8096
+    environment:
+      - UID=0
+      - GID=0
+      - GIDLIST=0
+      - UMASK=022
+      - TZ=Asia/Shanghai
+      - NO_PROXY=172.17.0.1,127.0.0.1,192.168.66.10,localhost
+      - ALL_PROXY=http://172.17.0.1:7890
+      - HTTP_PROXY=http://172.17.0.1:7890
+
