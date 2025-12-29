@@ -586,7 +586,7 @@ class CloudMonitor:
             return None
 
     def check_api_excludes(self, text, cfg):
-        local_exclude = cfg.get('excluded_keywords', [])
+        local_exclude = cfg.get('exclude_keywords', [])
         if local_exclude:
             for kw in local_exclude:
                 if re.match(r'^[a-zA-Z0-9]+$', kw):
