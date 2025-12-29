@@ -54,8 +54,8 @@ def load_config():
                     'folder_prefix': "电影/",
                     'priority_keywords': [],
                     'required_keywords': [], 
-                    'optional_keywords': ["原盘", "REMUX", "4K", "HDR", "电影"],
-                    'excluded_keywords': ["枪版", "抢先版", "TS", "TC", "1080", "1080p"],
+                    'optional_keywords': ["原盘", "REMUX", "4K", "HDR","简中" ],
+                    'excluded_keywords': ["枪版", "抢先版", "TS", "TC", "1080", "1080p", "S0", "EP", "更至", "完结"],
                     'try_join': True
                 }
             ]
