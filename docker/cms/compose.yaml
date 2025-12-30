@@ -1,15 +1,15 @@
 services:
-  cloud-media-sync:
+  cms:
     privileged: true
     container_name: cloud-media-sync
     image: docker.1ms.run/imaliang/cloud-media-sync:latest
     restart: always
-    network_mode: bridge
+      #    network_mode: bridge
     volumes:
-      - "./config:/config"
-      - "./logs:/logs"
-      - "./cache:/var/cache/nginx/emby"
-      - "/data/media:/media"
+      - "./cms/config:/config"
+      - "./cms/logs:/logs"
+      - "./cms/cache:/var/cache/nginx/emby"
+      - "./media:/media"
     ports:
       - "9527:9527"
       - "9096:9096"
@@ -32,10 +32,10 @@ services:
     image: 'docker.1ms.run/amilys/embyserver:4.8.11.0'
     restart: always
     volumes:
-      - ./config:/config
-      - /mnt/media:/media
+      - ./emby/config:/config
+      - ./media:/media
     ports:
-      - 8096:8096
+      - 127.0.0.1:8096:8096
     environment:
       - UID=0
       - GID=0
@@ -46,3 +46,17 @@ services:
       - ALL_PROXY=http://172.17.0.1:7890
       - HTTP_PROXY=http://172.17.0.1:7890
 
+  hyperms:
+    image: docker.1ms.run/gravityle/hyperms:0.0.5
+    container_name: hyperms
+    ports:
+      - "8115:8115" # 冒号左侧自定义
+      - "8196:8196"
+    volumes:
+      - ./hyperms/config:/config # 配置等映射，可自己修改
+      - ./media:/media
+    environment:
+      - HMS_TOKEN=
+      - EMBY_HOST=http://172.17.0.1:8096
+      - EMBY_APIKEY=
+    restart: always
