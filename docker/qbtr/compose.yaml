@@ -1,0 +1,41 @@
+services:
+  qbittorrent:
+    image: docker.1ms.run/linuxserver/qbittorrent:4.6.5
+    container_name: qbittorrent
+    environment:
+      - PUID=0
+      - PGID=0
+      - TZ=Asia/Shanghai
+      - UMASK_SET=022
+      - WEBUI_PORT=8080
+    volumes:
+      - ./qb/config:/config
+      - ./qb/torrents:/config/qBittorrent/BT_backup #映射qb种子路径
+      - /volume1/媒体库:/downloads
+    ports:
+      - 8080:8080
+      - 16881:16881
+      - 16881:16881/udp
+    network_mode: "bridge"
+    restart: unless-stopped
+
+  transmission:
+    image: docker.1ms.run/linuxserver/transmission:4.0.5
+    container_name: transmission
+    environment:
+      - PUID=0
+      - PGID=0
+      - TZ=Asia/Shanghai
+      - USER=admin #登录名，如要修改请先修改再粘贴进去。
+      - PASS=password #密码，如要修改请先修改再粘贴进去。
+      - TRANSMISSION_WEB_HOME=/config/web/src
+    volumes:
+      - ./tr/config:/config #映射trweb路径
+      - ./tr/torrents:/config/torrents #映射tr种子下载路径
+      - /volume1/媒体库:/downloads
+    ports:
+      - 9091:9091
+      - 51413:51413
+      - 51413:51413/udp
+    network_mode: "bridge"
+    restart: unless-stopped
