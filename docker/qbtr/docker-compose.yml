@@ -1,0 +1,83 @@
+services:
+  moviepilot:
+    stdin_open: true
+    tty: true
+    container_name: moviepilot-v2
+    hostname: moviepilot-v2
+    ports:
+     - '3000:3000'
+     - '3001:3001'
+    volumes:
+      - '/media:/downloads' #媒体
+      - './moviepilot-v2/config:/config' #持久化配置
+      - './moviepilot-v2/core:/moviepilot/.cache/ms-playwright' #内核浏览器
+      - '/var/run/docker.sock:/var/run/docker.sock:ro' #重启MP权限
+      - '/tr/config/torrents:/torrents'  #TR种子位置
+      - '/qbittorrent/data/data/BT_backup:/BT_backup' #QB种子位置
+    environment:
+      - 'NGINX_PORT=3000'
+      - 'PORT=3001'
+      - 'PUID=0'
+      - 'PGID=0'
+      - 'UMASK=000'
+      - 'TZ=Asia/Shanghai'
+      - 'SUPERUSER=admin'
+      - 'DB_TYPE=postgresql'
+      - 'DB_POSTGRESQL_HOST=postgresql'
+      - 'DB_POSTGRESQL_PORT=5432'
+      - 'DB_POSTGRESQL_DATABASE=moviepilot'
+      - 'DB_POSTGRESQL_USERNAME=moviepilot'
+      - 'DB_POSTGRESQL_PASSWORD=pg_password'
+      - 'CACHE_BACKEND_TYPE=redis'
+      - 'CACHE_BACKEND_URL=redis://:redis_password@redis:6379'
+    restart: always
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    image: docker.1ms.run/jxxghp/moviepilot-v2:latest
+
+  redis:
+    container_name: mp_redis
+    volumes:
+        - ./redis/data:/data
+    image: docker.1ms.run/redis
+    command: redis-server --save 600 1 --requirepass redis_password
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgresql:
+    container_name: mp_psql
+    image: docker.1ms.run/postgres
+    restart: always
+    environment:
+      POSTGRES_DB: moviepilot
+      POSTGRES_USER: moviepilot
+      POSTGRES_PASSWORD: pg_password
+    volumes:
+      # 仅 postgresql 18.0+ 及以上版本可用，根据版本二选一即可
+      - ./postgresql:/var/lib/postgresql
+      # 仅 postgresql 17.6 及以下版本可用，根据版本二选一即可
+      #- /volume1/docker/postgresql/data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U moviepilot -d moviepilot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    # 最后这个迁移数据库的
+  pgloader:
+    image: dimitri/pgloader:latest
+    volumes:
+      - ./moviepilot-v2/config:/mp_config
+    command: >
+      pgloader
+      sqlite:///mp_config/user.db
+      postgresql://moviepilot:pg_password@postgresql:5432/moviepilot
+    depends_on:
+      postgresql:
+        condition: service_healthy
