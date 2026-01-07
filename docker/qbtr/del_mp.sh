@@ -11,6 +11,13 @@ AUTH_TOKEN="Bearer eyJhbGciOiJIUzI1NiIsInR5cCI"
 
 AUTH_HEADER="Authorization: $AUTH_TOKEN"
 
+#清空数据
+if [ "$1" = "all" ] ;then
+    curl -X GET  "${API_BASE_URL}/api/v1/history/empty/transfer"  -H "$AUTH_HEADER"
+    exit
+fi
+
+#默认清除50条 成功的数据
 COUNT=${1:-50}
 STATUS=${2:-true}  #true false
 # 2. 函数定义：获取所有成功的ID
@@ -53,7 +60,7 @@ function get_successful_ids() {
         echo "成功获取到以下 ID: $SUCCESSFUL_IDS" >&2
     fi
 
-#    echo "$SUCCESSFUL_IDS"
+    echo "$SUCCESSFUL_IDS"
     return 0
 }
 # =======================================================
