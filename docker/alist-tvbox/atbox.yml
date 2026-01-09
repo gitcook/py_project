@@ -1,0 +1,15 @@
+services:
+    alist-tvbox:
+        ports:
+            - 4567:4567
+            - 5344:5244
+        environment:
+            - ALIST_PORT=5344
+        volumes:
+            - ./alist-tvbox:/data
+            - ./alist-tvbox/alist:/opt/alist/data
+            - ./media:/emby
+        restart: always
+        container_name: alist-tvbox
+        image: haroldli/alist-tvbox:latest
+        network_mode: bridge

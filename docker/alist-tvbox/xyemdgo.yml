@@ -1,0 +1,10 @@
+services:
+    xiaoya-emd-go:
+        container_name: xiaoya-emd-go
+        restart: always
+        ports:
+            - 8089:8080
+        volumes:
+            - ./media:/media
+        image: ddsderek/xiaoya-emd-go:latest
+        network_mode: bridge
