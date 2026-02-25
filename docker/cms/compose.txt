@@ -1,0 +1,64 @@
+services:
+  cms:
+    privileged: true
+    container_name: cloud-media-sync
+    image: docker.1ms.run/imaliang/cloud-media-sync:latest
+    restart: always
+    volumes:
+      - "./cms/config:/config"
+      - "./cms/logs:/logs"
+      - "./cms/cache:/var/cache/nginx/emby"
+      - "/volume1/video/CMS:/media"
+    ports:
+      - "9527:9527"
+      - "9096:9096"
+    networks:
+      static_net:
+        ipv4_address: 172.20.0.3  # 给 CMS 也分个固定 IP（可选，为了规范）
+    environment:
+      - PUID=0
+      - PGID=0
+      - UMASK=022
+      - TZ=Asia/Shanghai
+      - RUN_ENV=online
+      - ADMIN_USERNAME=admin
+      - ADMIN_PASSWORD=admin
+      - CMS_API_TOKEN=cloud_media_sync
+      # ✅ 这里直接填 Emby 的固定内部 IP，不走 DNS，也不走宿主机
+      - EMBY_HOST_PORT=http://172.20.0.2:8096
+      - EMBY_API_KEY=
+      - DONATE_CODE=
+      # 代理设置（如果需要）
+      - HTTP_PROXY=http://172.17.0.1:7890
+      - HTTPS_PROXY=http://172.17.0.1:7890
+      - NO_PROXY=localhost,127.0.0.0/8,10.0.0.0/8,172.0.0.0/8,192.168.0.0/16
+
+  emby:
+    privileged: true
+    container_name: emby
+    image: 'docker.1ms.run/amilys/embyserver:4.8.11.0'
+    restart: always
+    volumes:
+      - ./emby/config:/config
+      - /volume1/video/CMS:/media
+    networks:
+      static_net:
+        # ✅ 核心操作：强制指定 Emby 的内部 IP 为 172.20.0.2
+        ipv4_address: 172.20.0.2
+    
+    environment:
+      - UID=0
+      - GID=0
+      - GIDLIST=0
+      - UMASK=022
+      - TZ=Asia/Shanghai
+      - NO_PROXY=172.17.0.1,127.0.0.1,192.168.66.10,localhost
+      - ALL_PROXY=http://172.17.0.1:7890
+      - HTTP_PROXY=http://172.17.0.1:7890
+
+# ✅ 定义一个自定义网络，允许我们手动分配 IP
+networks:
+  static_net:
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
