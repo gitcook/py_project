@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc/localtime:/etc/localtime:ro
+    command: nginx alist
+    environment:
+      # --- 基础设置 ---
+      - WATCHTOWER_CLEANUP=true
+      - TZ=Asia/Shanghai  # 设置容器时区，对于定时任务很重要
+
+      # --- 调度设置 (二选一) ---
+      # 方式 A: 轮询间隔 (秒)，例如每小时检查一次：
+      # - WATCHTOWER_POLL_INTERVAL=3600
+      
+      # 方式 B: Cron 表达式 (推荐)，例如每天凌晨 3 点检查：
+      - WATCHTOWER_SCHEDULE=0 0 3 * * *
+
+      # --- 排除/包含设置 ---
+      # 默认监控所有容器。如果设置为 true，则只监控带有 
+      # "com.centurylinklabs.watchtower.enable=true" 标签的容器
+      # - WATCHTOWER_LABEL_ENABLE=false 
+
+      # --- 滚动更新 ---
+      # 依次更新容器，减少服务中断风险
+      - WATCHTOWER_ROLLING_RESTART=true
