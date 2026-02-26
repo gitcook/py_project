@@ -1,0 +1,29 @@
+services:
+  qms:
+    image: qicfan/qmediasync:latest
+    container_name: qmediasync
+    restart: unless-stopped
+    network_mode: bridge
+    ports:
+        - "12333:12333"
+        - "8095:8095"
+        - "8094:8094"
+    volumes:
+        - ./config:/app/config
+        - ./media:/media
+    environment:
+        - TZ=Asia/Shanghai
+
+  postgres:
+    image: postgres:15  # 可以使用 13, 14, 15, 16 等版本
+    container_name: postgres
+    environment:
+      POSTGRES_DB: postgres      # 默认数据库名
+      POSTGRES_USER: postgres        # 默认用户名
+      POSTGRES_PASSWORD: 123123 # 密码（生产环境要改为强密码）
+    ports:
+      - 5432:5432                # 主机端口:容器端口
+    volumes:
+      - ./data:/var/lib/postgresql/data  # 数据持久化
+    restart: unless-stopped        # 自动重启
+    network_mode: "bridge"

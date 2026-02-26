@@ -1,0 +1,1 @@
+/usr/libexec/postgresql15/postgres "-D" "/app/config/postgres/data" "-k" "/app/config/postgres/tmp"
